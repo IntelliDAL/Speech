@@ -1,5 +1,6 @@
 import argparse
 import os
+import pickle
 import random
 import logging
 from logging import handlers
@@ -11,7 +12,7 @@ from torch.backends import cudnn
 from drawing.drawing import plot_confusion_matrix
 from method import train, evaluate, evaluate_val
 from model.model_main import InfoAttentionClassifier
-from untils import dataprogress, total_dataloader, saveList, mean_sd, dataprogress_dataset3800
+from untils import dataprogress, total_dataloader, saveList, mean_sd, dataprogress2
 import datetime
 from pathlib import Path
 import matplotlib as mpl
@@ -33,16 +34,24 @@ def init_seeds(seed=0):
 def run(args):
     init_seeds(1)
     print(args)
-
+    # labelsPath = 'results.xlsx'
+    #
     # prefix = '/home/idal-01/data/'
-    prefix = '/home/idal-01/data/dataset3800/'
-    labelsPath = 'results.xlsx'
+    # prefix_EATD = '/home/idal-01/data/EATD-Corpus/EATD-Corpus/EATD-Corpus/'
+    # prefixCMDC = '/home/idal-01/data/CMDC/tmp/'
+
+    f = open('/home/idal-01/code/TD-learnableFilters/NRAC_L.pkl', 'rb')
+    # f = open('/home/eric/code_for_ywj/FD-learnableFilters/FD_learnableFilters/NRAC_L.pkl', 'rb')
+    # f = open('/home/eric/code_for_ywj/FD-learnableFilters/FD_learnableFilters/self-supervised/NRAC.pkl', 'rb')
+    data, Labels = pickle.load(f)
+
     # data, labels, sex = dataprogress(prefix, labelsPath)
-    data, labels, age = dataprogress_dataset3800(prefix)
+    # data, labels = dataprogress2(prefix_EATD)
+    # data, labels = dataprogress3(prefixCMDC)
     print('Load data finished' + '\n')
-    print('The number of patient: ', len(np.where(np.array(labels) == 1)[0]))
-    print('The number of NC: ', len(np.where(np.array(labels) == 0)[0]))
-    trainList_dataloader, testList_dataloader, valList_dataloader, toPersonList, CE_weights = total_dataloader(args, data, labels)
+    print('The number of patient: ', len(np.where(np.array(Labels) == 1)[0]))
+    print('The number of NC: ', len(np.where(np.array(Labels) == 0)[0]))
+    trainList_dataloader, testList_dataloader, valList_dataloader, toPersonList, CE_weights = total_dataloader(args, data, Labels)
 
     results, results_segments, aucs, tprs = [], [], [], []
     base_fpr = np.linspace(0, 1, 100)
@@ -52,16 +61,6 @@ def run(args):
         Info_model = InfoAttentionClassifier(args).cuda()
         total_info = sum([param.nelement() for param in Info_model.parameters()])
         print('Number of parameter: %.6f' % total_info)
-        ckpt_path = None
-        # ckpt_path = '/home/idal-01/code/TD-learnableFilters/'+str(train_idx)+'.ckpt'
-        if ckpt_path is not None:
-            print('Loading pre-trained model' + '\n')
-            pretrained_dict = torch.load(ckpt_path)
-            model_dict = Info_model.state_dict()
-            pretrained_dict = {k: v for k, v in pretrained_dict.items() if k in model_dict}
-            model_dict.update(pretrained_dict)
-            Info_model.load_state_dict(model_dict)
-
         RETURNED_MODEL, LastEpModel = train(args, trainList_dataloader[train_idx], Info_model, testList_dataloader[train_idx], CE_weights[train_idx], train_idx)
         print('Testing..........' + '\n')
         result_R = evaluate_val(testList_dataloader[train_idx], RETURNED_MODEL)
@@ -69,12 +68,12 @@ def run(args):
 
         results_segments.append(result_R)
         result_L = evaluate_val(testList_dataloader[train_idx], LastEpModel)
-        torch.save(RETURNED_MODEL.state_dict(), "%d_Info_model.ckpt" % train_idx)
+        torch.save(LastEpModel.state_dict(), "/home/idal-01/code/TD-learnableFilters/self-supervised/pre-trained_model/%d_Lastmodel.ckpt" % train_idx)
         print(result_L)
 
         result, fpr, tpr, = evaluate(testList_dataloader[train_idx], RETURNED_MODEL, toPersonList[train_idx])
         print(result)
-        torch.save(RETURNED_MODEL.state_dict(), "%d.ckpt" % train_idx)
+        torch.save(RETURNED_MODEL.state_dict(), "/home/idal-01/code/TD-learnableFilters/self-supervised/pre-trained_model/%d.ckpt" % train_idx)
         results.append(result)
         aucs.append(result['auc'])
 
@@ -126,12 +125,13 @@ def run(args):
 
 
 def main():
-    init_seeds(1)
+    init_seeds(3407)
     fs = 16000
-    cw_len = 10.3
+    # cw_len = 10.3
+    cw_len = 6.46
     wlen = int(fs * cw_len)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--num_epochs', type=int, default=200)
+    parser.add_argument('--num_epochs', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=64)
     parser.add_argument('--learning_rate_1', type=float, default=0.0005)
     parser.add_argument('--input_dim', type=int, default=wlen)
@@ -142,17 +142,17 @@ def main():
     parser.add_argument('--hidden_channels', type=int, default=64)
     parser.add_argument('--skip_channels', type=int, default=64)
     parser.add_argument('--n_layers', type=int, default=5)
-    parser.add_argument('--n_blocks', type=int, default=4)
+    parser.add_argument('--n_blocks', type=int, default=3)
     parser.add_argument('--dilation', type=int, default=2)
     parser.add_argument('--kernel_size', type=int, default=3)
     parser.add_argument('--aptim', type=str, default='adam')
-    parser.add_argument('--initializer', type=str, default='LowAndHighFreq')
-    parser.add_argument('--experiment', type=str, default='FD-filters-attempt')
+    parser.add_argument('--initializer', type=str, default='random')  # mel_scale
+    parser.add_argument('--experiment', type=str, default='FD-supervised_Learning')
 
     # TD滤波器
     parser.add_argument('--filter_size', type=int, default=513)
     parser.add_argument('--filter_num', type=int, default=64)
-    parser.add_argument('--frame_num', type=int, default=1024)
+    parser.add_argument('--frame_num', type=int, default=640)
     parser.add_argument('--NFFT', type=int, default=1024)
     parser.add_argument('--sigma_coff', type=float, default=0.0015)
     args = parser.parse_args()
@@ -163,7 +163,7 @@ def main():
 
 if __name__ == '__main__':
     init_seeds(1)
-    device_index = 1  # 目标GPU的索引
+    device_index = 0  # 目标GPU的索引
     torch.cuda.set_device(device_index)
-    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '0'
     main()
