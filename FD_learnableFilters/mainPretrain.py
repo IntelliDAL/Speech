@@ -3,6 +3,7 @@ import os
 import pickle
 import random
 import logging
+from collections import OrderedDict
 from logging import handlers
 import numpy as np
 import torch
@@ -12,7 +13,7 @@ from torch.backends import cudnn
 from drawing.drawing import plot_confusion_matrix
 from method import train, evaluate, evaluate_val
 from model.model_main import InfoAttentionClassifier
-from untils import dataprogress, total_dataloader, saveList, mean_sd, dataprogress2, dataprogress3
+from untils import dataprogress, total_dataloader, saveList, mean_sd, dataprogress2
 import datetime
 from pathlib import Path
 import matplotlib as mpl
@@ -34,21 +35,17 @@ def init_seeds(seed=0):
 def run(args):
     init_seeds(1)
     print(args)
+    f = open('/home/idal-01/code/TD-learnableFilters/NRAC_L.pkl', 'rb')
+    data, Labels = pickle.load(f)
+
     # labelsPath = 'results.xlsx'
-    #
     # prefix = '/home/idal-01/data/'
     # prefix_EATD = '/home/idal-01/data/EATD-Corpus/EATD-Corpus/EATD-Corpus/'
     # prefixCMDC = '/home/idal-01/data/CMDC/tmp/'
 
-    f = open('/home/idal-01/code/TD-learnableFilters/NRAC_L.pkl', 'rb')
-    # f = open('/home/eric/code_for_ywj/FD-learnableFilters/FD_learnableFilters/NRAC_L.pkl', 'rb')
-    # f = open('/home/idal-01/code/TD-learnableFilters/CMDC.pkl', 'rb')
-    # f = open('/home/eric/code_for_ywj/FD-learnableFilters/FD_learnableFilters/self-supervised/NRAC.pkl', 'rb')
-    data, Labels = pickle.load(f)
-
     # data, labels, sex = dataprogress(prefix, labelsPath)
-    # data, Labels = dataprogress2(prefix_EATD)
-    # data, Labels = dataprogress3(prefixCMDC)
+    # data, labels = dataprogress2(prefix_EATD)
+    # data, labels = dataprogress3(prefixCMDC)
     print('Load data finished' + '\n')
     print('The number of patient: ', len(np.where(np.array(Labels) == 1)[0]))
     print('The number of NC: ', len(np.where(np.array(Labels) == 0)[0]))
@@ -62,6 +59,22 @@ def run(args):
         Info_model = InfoAttentionClassifier(args).cuda()
         total_info = sum([param.nelement() for param in Info_model.parameters()])
         print('Number of parameter: %.6f' % total_info)
+        ckpt_path = '/home/idal-01/code/TD-learnableFilters/self-supervised/pre-trained_model/Encoder_100_I.pt'
+        # ckpt_path = '/home/idal-01/code/TD-learnableFilters/self-supervised/pre-trained_model/EncoderI.pt'
+        if ckpt_path is not None:
+            print('Loading pre-trained model' + '\n')
+            """AudioInfoCollect"""
+            pretrained_dict_ = torch.load(ckpt_path)
+            # pretrained_dict = OrderedDict()
+            # for key in pretrained_dict_:
+            #     pretrained_dict[key[14:]] = pretrained_dict_[key]
+            # model_dict = Info_model.state_dict()
+            model_dict = Info_model.state_dict()
+            pretrained_dict = {k: v for k, v in pretrained_dict_.items() if k in model_dict}
+            model_dict.update(pretrained_dict)
+            # Info_model.load_state_dict(model_dict, strict=False)
+            Info_model.load_state_dict(model_dict, strict=False)
+
         RETURNED_MODEL, LastEpModel = train(args, trainList_dataloader[train_idx], Info_model, testList_dataloader[train_idx], CE_weights[train_idx], train_idx)
         print('Testing..........' + '\n')
         result_R = evaluate_val(testList_dataloader[train_idx], RETURNED_MODEL)
@@ -128,13 +141,12 @@ def run(args):
 def main():
     init_seeds(3407)
     fs = 16000
-    # cw_len = 10.3
     cw_len = 6.46
     wlen = int(fs * cw_len)
     parser = argparse.ArgumentParser()
     parser.add_argument('--num_epochs', type=int, default=50)
     parser.add_argument('--batch_size', type=int, default=64)
-    parser.add_argument('--learning_rate_1', type=float, default=0.005)
+    parser.add_argument('--learning_rate_1', type=float, default=0.001)
     parser.add_argument('--input_dim', type=int, default=wlen)
     parser.add_argument('--fs', type=int, default=16000)
     parser.add_argument('--audio_length', type=int, default=cw_len)
@@ -143,15 +155,14 @@ def main():
     parser.add_argument('--hidden_channels', type=int, default=64)
     parser.add_argument('--skip_channels', type=int, default=64)
     parser.add_argument('--n_layers', type=int, default=5)
-    parser.add_argument('--n_blocks', type=int, default=1)
+    parser.add_argument('--n_blocks', type=int, default=3)
     parser.add_argument('--dilation', type=int, default=2)
     parser.add_argument('--kernel_size', type=int, default=3)
     parser.add_argument('--aptim', type=str, default='adam')
-    # random, mel_scale, ERB, Bark, Truncated Mel, Truncated U-Hz
-    parser.add_argument('--initializer', type=str, default='Truncated U-Hz')
-    parser.add_argument('--experiment', type=str, default='FD-supervised_Learning')
+    parser.add_argument('--initializer', type=str, default='random')  # mel_scale
+    parser.add_argument('--experiment', type=str, default='FD-filterPretrained')
 
-    # FD滤波器
+    # TD滤波器
     parser.add_argument('--filter_size', type=int, default=513)
     parser.add_argument('--filter_num', type=int, default=64)
     parser.add_argument('--frame_num', type=int, default=640)
@@ -165,7 +176,7 @@ def main():
 
 if __name__ == '__main__':
     init_seeds(1)
-    device_index = 0  # 目标GPU的索引
+    device_index = 1  # 目标GPU的索引
     torch.cuda.set_device(device_index)
-    os.environ["CUDA_VISIBLE_DEVICES"] = '0'
+    os.environ["CUDA_VISIBLE_DEVICES"] = '1'
     main()
