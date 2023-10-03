@@ -1,0 +1,270 @@
+Args:
+num_epochs: 50
+batch_size: 64
+learning_rate_1: 0.0005
+input_dim: 103360
+fs: 16000
+audio_length: 6.46
+input_channels: 1
+output_channels: 64
+hidden_channels: 64
+skip_channels: 64
+n_layers: 5
+n_blocks: 3
+dilation: 2
+kernel_size: 3
+aptim: adam
+initializer: random
+experiment: FD-filterPretrained
+filter_size: 513
+filter_num: 64
+frame_num: 640
+NFFT: 1024
+sigma_coff: 0.0015
+
+====================================================================================================
+
+Results:
+Result 1: Precision: 0.9565 | Recall: 1.0000 | F1: 0.9646 | Accuracy: 0.9655 | AUC: 0.9351
+Result 2: Precision: 0.8148 | Recall: 1.0000 | F1: 0.7885 | Accuracy: 0.8276 | AUC: 0.8182
+Result 3: Precision: 0.9167 | Recall: 1.0000 | F1: 0.9230 | Accuracy: 0.9286 | AUC: 0.9167
+Result 4: Precision: 1.0000 | Recall: 0.9524 | F1: 0.9650 | Accuracy: 0.9643 | AUC: 1.0000
+Result 5: Precision: 0.9500 | Recall: 0.9048 | F1: 0.8951 | Accuracy: 0.8929 | AUC: 0.8844
+
+====================================================================================================
+
+Mean+-SD:
+Prec_mean + SD == 0.928 +- 0.062
+Recall_mean + SD == 0.971 +- 0.038
+ACC_mean + SD == 0.916 +- 0.052
+F1_mean + SD == 0.907 +- 0.065
+AUC_mean + SD == 0.911 +- 0.060
+
+====================================================================================================
+
+Our Model:
+
+====================================================================================================
+AudioSpectral(
+  (compression_PCEN): PCENLayer(
+    (ema): ExponentialMovingAverage()
+  )
+  (FD_Learned_Filters): GaussianShape()
+)
+
+====================================================================================================
+AudioInfoCollect(
+  (relu): LeakyReLU(negative_slope=0.2)
+  (conv): ModuleList(
+    (0): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), groups=64, bias=False)
+    )
+    (1): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,), groups=64, bias=False)
+    )
+    (2): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(4,), dilation=(4,), groups=64, bias=False)
+    )
+    (3): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(8,), dilation=(8,), groups=64, bias=False)
+    )
+    (4): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(16,), dilation=(16,), groups=64, bias=False)
+    )
+    (5): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(1,), groups=32, bias=False)
+    )
+    (6): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,), groups=32, bias=False)
+    )
+    (7): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(4,), dilation=(4,), groups=32, bias=False)
+    )
+    (8): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(8,), dilation=(8,), groups=32, bias=False)
+    )
+    (9): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(16,), dilation=(16,), groups=32, bias=False)
+    )
+    (10): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(1,), groups=16, bias=False)
+    )
+    (11): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(2,), dilation=(2,), groups=16, bias=False)
+    )
+    (12): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(4,), dilation=(4,), groups=16, bias=False)
+    )
+    (13): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(8,), dilation=(8,), groups=16, bias=False)
+    )
+    (14): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(3,), stride=(1,), padding=(16,), dilation=(16,), groups=16, bias=False)
+    )
+  )
+  (skip): ModuleList(
+    (0): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (1): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (2): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (3): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (4): Sequential(
+      (0): Conv1d(64, 64, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (5): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (6): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (7): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (8): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (9): Sequential(
+      (0): Conv1d(32, 32, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (10): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (11): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (12): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (13): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(1,), stride=(1,), bias=False)
+    )
+    (14): Sequential(
+      (0): Conv1d(16, 16, kernel_size=(1,), stride=(1,), bias=False)
+    )
+  )
+  (downsample): ModuleList(
+    (0): PatchMerging(
+      input_resolution=(64, 640), dim=16
+      (reduction): Linear(in_features=64, out_features=16, bias=False)
+      (norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+      (attn): WindowAttention(
+        dim=16, window_size=(4, 4), num_heads=4
+        (qkv): Linear(in_features=16, out_features=48, bias=True)
+        (attn_drop): Dropout(p=0.1, inplace=False)
+        (proj): Linear(in_features=16, out_features=16, bias=True)
+        (proj_drop): Dropout(p=0.2, inplace=False)
+        (softmax): Softmax(dim=-1)
+      )
+      (Unfold): Unfold(kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+      (Fold): Fold(output_size=(32, 320), kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+    )
+    (1): PatchMerging(
+      input_resolution=(32, 320), dim=16
+      (reduction): Linear(in_features=64, out_features=16, bias=False)
+      (norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+      (attn): WindowAttention(
+        dim=16, window_size=(4, 4), num_heads=4
+        (qkv): Linear(in_features=16, out_features=48, bias=True)
+        (attn_drop): Dropout(p=0.1, inplace=False)
+        (proj): Linear(in_features=16, out_features=16, bias=True)
+        (proj_drop): Dropout(p=0.2, inplace=False)
+        (softmax): Softmax(dim=-1)
+      )
+      (Unfold): Unfold(kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+      (Fold): Fold(output_size=(16, 160), kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+    )
+    (2): PatchMerging(
+      input_resolution=(16, 160), dim=16
+      (reduction): Linear(in_features=64, out_features=16, bias=False)
+      (norm): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+      (attn): WindowAttention(
+        dim=16, window_size=(4, 4), num_heads=4
+        (qkv): Linear(in_features=16, out_features=48, bias=True)
+        (attn_drop): Dropout(p=0.1, inplace=False)
+        (proj): Linear(in_features=16, out_features=16, bias=True)
+        (proj_drop): Dropout(p=0.2, inplace=False)
+        (softmax): Softmax(dim=-1)
+      )
+      (Unfold): Unfold(kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+      (Fold): Fold(output_size=(8, 80), kernel_size=(4, 4), dilation=1, padding=0, stride=(4, 4))
+    )
+  )
+)
+
+====================================================================================================
+ResNet(
+  (resblock1): ResBlock(
+    (convblock1): ConvBlock(
+      (0): Conv1d(16, 32, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock2): ConvBlock(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock3): ConvBlock(
+      (0): Conv1d(32, 32, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (shortcut): ConvBlock(
+      (0): Conv1d(16, 32, kernel_size=(1,), stride=(1,), bias=False)
+      (1): BatchNorm1d(32, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (add): Add
+    (act): LeakyReLU(negative_slope=0.2)
+  )
+  (resblock2): ResBlock(
+    (convblock1): ConvBlock(
+      (0): Conv1d(32, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock2): ConvBlock(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock3): ConvBlock(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (shortcut): ConvBlock(
+      (0): Conv1d(32, 64, kernel_size=(1,), stride=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (add): Add
+    (act): LeakyReLU(negative_slope=0.2)
+  )
+  (resblock3): ResBlock(
+    (convblock1): ConvBlock(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock2): ConvBlock(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (2): ReLU()
+    )
+    (convblock3): ConvBlock(
+      (0): Conv1d(64, 64, kernel_size=(3,), stride=(1,), padding=(1,), bias=False)
+      (1): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    )
+    (shortcut): BatchNorm1d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+    (add): Add
+    (act): LeakyReLU(negative_slope=0.2)
+  )
+  (gap): AdaptiveAvgPool1d(output_size=1)
+  (squeeze): Squeeze(dim=-1)
+  (fc): Linear(in_features=64, out_features=2, bias=True)
+  (dropout): Dropout(p=0.25, inplace=False)
+)
